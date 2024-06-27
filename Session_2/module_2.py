@@ -1,4 +1,4 @@
-# from collections import defaultdict as dd
+from collections import defaultdict as dd
 from itertools import product
 from typing import Any, Dict, List, Tuple
 
@@ -13,9 +13,7 @@ def task_1(data_1: Dict[str, int], data_2: Dict[str, int]):
 
 
 def task_2():
-    result = {}
-    for num in range(1, 16):
-        result[num] = num * num
+    result = {num: num * num for num in range(1, 16)}
     return result
 
 
@@ -31,7 +29,6 @@ def task_3(data: Dict[Any, List[str]]):
 def task_4(data: Dict[str, int]):
     # sort our dict by values
     sorted_dict = sorted(data.items(), key=lambda x: x[1], reverse=True)
-    result_list = []
     if len(data) <= 3:
         result_list = [i[0] for i in sorted_dict]  # get only key
         return result_list
@@ -41,13 +38,9 @@ def task_4(data: Dict[str, int]):
 
 
 def task_5(data: List[Tuple[Any, Any]]) -> Dict[str, List[int]]:
-    result_dict = {}
+    result_dict = dd(list)
     for item in data:
-        if result_dict.get(item[0]):
-            result_dict[item[0]].append(item[1])
-        else:
-            result_dict[item[0]] = [item[1]]
-    print(result_dict)
+        result_dict[item[0]].append(item[1])
     return result_dict
 
 
@@ -80,7 +73,7 @@ def task_8(haystack: str, needle: str) -> int:
             if haystack[i] == needle:
                 return i
         else:
-            if haystack[i: i + len(needle)] == needle:
+            if haystack[i : i + len(needle)] == needle:
                 return i
             else:
                 no_match = True
