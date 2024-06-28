@@ -21,6 +21,7 @@ def task_2(*args, **kwags):
 def helper(func):
     def wrapper(*args, **kwargs):
         print("Hi, friend! What's your name?")
+        #execute decorated function
         func(*args, **kwargs)
         print("See you soon!")
 
@@ -34,10 +35,10 @@ def task_3(name: str):
 
 def timer(func):
     def wrapper():
-        start = time.time()
+        start = time.time() # start time
         func()
-        end = time.time()
-        run_time = end - start
+        end = time.time() # end time
+        run_time = end - start # differance
         print(f"Finished {func.__name__} in {run_time:.4f} secs")
 
     return wrapper
@@ -49,14 +50,16 @@ def task_4():
 
 
 def task_5(matrix: Matrix) -> Matrix:
+    # row count is actual length of matrix
     row = len(matrix)
+    #columns can't be different so get len of [0]
     col = len(matrix[0])
+    #create our new matix with 0 values
     result = [[0] * row for _ in range(col)]
-    print(result)
+    # transpose matrix
     for i in range(col):
         for j in range(row):
             result[i][j] = matrix[j][i]
-            print(result)
 
     return result
 
@@ -68,13 +71,15 @@ def task_6(queue: str):
     chars = []
 
     for char in queue:
+        # store all '(' chars
         if char == "(":
             chars.append(char)
+        # subtract '(' char when we got ')'
         elif char == ")":
             if not chars:
                 return False
             chars = chars[:-1]
     if len(chars) == 0:
         return True
-    else:
-        return False
+
+    return False
