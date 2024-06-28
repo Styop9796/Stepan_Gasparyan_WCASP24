@@ -21,7 +21,7 @@ def task_2(*args, **kwags):
 def helper(func):
     def wrapper(*args, **kwargs):
         print("Hi, friend! What's your name?")
-        #execute decorated function
+        # execute decorated function
         func(*args, **kwargs)
         print("See you soon!")
 
@@ -35,10 +35,10 @@ def task_3(name: str):
 
 def timer(func):
     def wrapper():
-        start = time.time() # start time
+        start = time.time()  # start time
         func()
-        end = time.time() # end time
-        run_time = end - start # differance
+        end = time.time()  # end time
+        run_time = end - start  # differance
         print(f"Finished {func.__name__} in {run_time:.4f} secs")
 
     return wrapper
@@ -52,9 +52,9 @@ def task_4():
 def task_5(matrix: Matrix) -> Matrix:
     # row count is actual length of matrix
     row = len(matrix)
-    #columns can't be different so get len of [0]
+    # columns can't be different so get len of [0]
     col = len(matrix[0])
-    #create our new matix with 0 values
+    # create our new matix with 0 values
     result = [[0] * row for _ in range(col)]
     # transpose matrix
     for i in range(col):
