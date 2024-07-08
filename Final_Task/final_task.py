@@ -9,6 +9,7 @@ from io import TextIOWrapper
 from typing import Dict, List
 
 DEFAULT_PATH_TO_STORE_INVERTED_INDEX = "inverted.index"
+PATH_TO_STOP_WORDS = 'stop_words_en.txt'
 
 
 class EncodedFileType(FileType):
@@ -102,10 +103,16 @@ def build_inverted_index(document: Dict[int, str]) -> InvertedIndex:
     :param documents: dict with documents
     :return: InvertedIndex class
     """
+
     words_ids = {}
+    with open(PATH_TO_STOP_WORDS,'r',encoding='utf-8') as stop_word:
+        st_word_list = ([i.strip() for i in list(stop_word)])
+
     for doc_id, text in document.items():
         for word in text:
-            if word not in words_ids:
+            if word not in words_ids :#and word not in st_word_list:
+                if word in st_word_list:
+                    continue
                 words_ids[word] = set()
             words_ids[word].add(doc_id)
     return InvertedIndex(words_ids)
@@ -218,3 +225,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
