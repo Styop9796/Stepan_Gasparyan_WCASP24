@@ -2,15 +2,16 @@ PASSING_GRADE = 8
 
 
 class Trainee:
-    visited_lectures = 0
-    done_home_tasks = 0
-    missed_lectures = 0
-    missed_home_tasks = 0
-    mark = 0
 
     def __init__(self, name: str, surname: str):
         self.name = name
         self.surname = surname
+        self.visited_lectures = 0
+        self.done_home_tasks = 0
+        self.missed_lectures = 0
+        self.missed_home_tasks = 0
+        self.mark = 0
+
 
     def visit_lecture(self):
         self.visited_lectures += 1
@@ -54,7 +55,8 @@ class Trainee:
         return self.mark
 
     def is_passed(self):
-        if self.mark >= 8:
+        if self.mark >= PASSING_GRADE:
+
             print("Good job!")
         else:
             print(f"You need to {8 - self.mark} points. Try to do your best!")
