@@ -12,6 +12,7 @@ class Trainee:
         self.missed_home_tasks = 0
         self.mark = 0
 
+
     def visit_lecture(self):
         self.visited_lectures += 1
         # make sure to have more 0 and less or equal 10
@@ -55,6 +56,7 @@ class Trainee:
 
     def is_passed(self):
         if self.mark >= PASSING_GRADE:
+
             print("Good job!")
         else:
             print(f"You need to {8 - self.mark} points. Try to do your best!")
