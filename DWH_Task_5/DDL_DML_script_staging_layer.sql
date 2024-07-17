@@ -222,8 +222,7 @@ SELECT invoice_number ,
 	  product_price ,
 	  product_cost ,
 	  product_stock
-FROM sa_offline_sales.ext_offline_sales
-LIMIT 100 ;
+FROM sa_offline_sales.ext_offline_sales;
  
  
 
@@ -265,8 +264,7 @@ SELECT
     product_price,
     product_cost,
     product_stock
-FROM sa_online_sales.ext_online_sales
-LIMIT 100;
+FROM sa_online_sales.ext_online_sales;
 
 
 SELECT * FROM sa_offline_sales.src_offline_sales;
