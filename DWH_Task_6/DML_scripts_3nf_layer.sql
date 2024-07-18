@@ -430,8 +430,6 @@ SELECT insert_employees_online_sales();
 
 
 
-/*
-
 CREATE OR REPLACE FUNCTION insert_sales_online_sales()
 RETURNS VOID AS $$
 DECLARE
@@ -444,16 +442,16 @@ BEGIN
     LOOP
         SELECT sale_id INTO target_sale_id
         FROM BL_3NF.CE_SALES_SCD ci
-        WHERE ci.source_id::INT = rec.invoice_number;
+        WHERE ci.source_id = rec.invoice_number;
 
         -- Check for existence in the target table
         IF NOT EXISTS (
             SELECT 1
             FROM BL_3NF.CE_SALES_SCD ad
             WHERE ad.date = rec.date
-            AND ad.product_id = rec.product_id
-            AND ad.empolyee_id = rec.empolyee_id
-			AND ad.store_id = rec.store_id
+            AND ad.product_id::TEXT = rec.product_id
+            AND ad.employee_id = rec.employee_id
+			AND ad.store_id::TEXT = rec.store_id
 			AND ad.customer_id = rec.customer_id
             AND ad.quantity = rec.quantity
 			AND ad.stock = rec.stock
@@ -467,7 +465,7 @@ BEGIN
             INSERT INTO BL_3NF.CE_SALES_SCD (
 				date,
 				product_id,
-				empolyee_id,
+				employee_id,
 				store_id,
 				customer_id,
 				quantity,
@@ -485,15 +483,15 @@ BEGIN
             )
             VALUES (
                 rec.date,
-				(SELECT product_id FROM BL_3NF.CE_PRODUCTS_SCD WHERE source_id = rec.product_id),
-				(SELECT employee_id FROM BL_3NF.CE_EMPLOYEES_SCD WHERE source_id = rec.employee_id),
+				(SELECT product_id FROM BL_3NF.CE_PRODUCTS_SCD WHERE source_id = rec.product_id LIMIT 1),
+				(SELECT employee_id FROM BL_3NF.CE_EMPLOYEES_SCD WHERE source_id = rec.employee_id::TEXT ),
                 (SELECT store_id FROM BL_3NF.CE_STORES WHERE source_id = rec.store_id),
-				(SELECT customer_id FROM BL_3NF.CE_CUSTOMERS_SCD WHERE source_id = rec.customer_id),
-                res.quantity,
-				res.stock,
+				(SELECT customer_id FROM BL_3NF.CE_CUSTOMERS_SCD WHERE source_id = rec.customer_id::TEXT),
+                rec.quantity,
+				rec.stock,
 				rec.price,
 				rec.cost,
-				res.sales.channel,
+				rec.sales_channel,
 				current_date,
                 '9999-12-31'::date,
 				'Y',
@@ -510,4 +508,3 @@ $$ LANGUAGE plpgsql;
 
 SELECT insert_sales_online_sales();
 
-*/
