@@ -385,3 +385,64 @@ WHERE NOT EXISTS (
     WHERE BL_3NF.CE_SALES_SCD.sale_id = default_row.sale_id
 )
 RETURNING *;
+
+
+
+WITH ids as (
+	SELECT source_id::INT FROM bl_3nf.CE_COUNTRIES
+)
+
+
+INSERT INTO BL_3NF.CE_COUNTRIES(
+	country_name ,
+	insert_dt ,
+	update_dt ,
+	source_id ,
+	source_entity ,
+	source_system 
+)
+SELECT c.country_name,
+		current_date,
+		current_date,
+		c.country_id,
+		'src_offline_sales',
+		'sa_offline_sales'
+FROM sa_offline_sales.src_offline_sales c
+WHERE c.country_id::INT NOT IN (SELECT * FROM ids
+)
+LIMIT 1
+	
+
+
+DELETE FROM BL_3NF.CE_COUNTRIES WHERE country_id>0
+
+
+SELECT 
+    c.country_name,
+    current_date,
+    current_date,
+    c.country_id,
+    'src_offline_sales',
+    'sa_offline_sales'
+FROM 
+    sa_offline_sales.src_offline_sales c
+WHERE 
+    c.country_id::INT NOT IN (SELECT source_id::INT FROM bl_3nf.CE_COUNTRIES);
+
+
+SELECT 
+    c.country_name,
+    current_date AS insert_dt,
+    current_date AS update_dt,
+    c.country_id AS source_id,
+    'src_offline_sales' AS source_entity,
+    'sa_offline_sales' AS source_system,
+    CASE WHEN EXISTS (
+        SELECT 1
+        FROM bl_3nf.CE_COUNTRIES ce
+        WHERE ce.source_id::INT = c.country_id::INT
+    ) THEN 'Already Exists'
+    ELSE 'To Be Inserted'
+    END AS status
+FROM 
+    sa_offline_sales.src_offline_sales c;
