@@ -1,6 +1,6 @@
 
 
-CREATE OR REPLACE FUNCTION insert_countries_offline_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_countries_offline_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -31,10 +31,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-SELECT insert_countries_offline_sales();
+SELECT BL_3NF.insert_countries_offline_sales();
 
 
-CREATE OR REPLACE FUNCTION insert_cities_offline_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_cities_offline_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -76,11 +76,11 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT insert_cities_offline_sales();
+SELECT BL_3NF.insert_cities_offline_sales();
 
 
 
-CREATE OR REPLACE FUNCTION insert_addresses_offline_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_addresses_offline_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -121,12 +121,12 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT insert_addresses_offline_sales();
+SELECT BL_3NF.insert_addresses_offline_sales();
 
 
 
 
-CREATE OR REPLACE FUNCTION insert_store_types_offline_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_store_types_offline_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -139,15 +139,15 @@ BEGIN
         IF NOT EXISTS (
             SELECT 1
             FROM BL_3NF.CE_STORE_TYPES co
-            WHERE co.storetype_name = rec.storetype_name
-            AND co.source_id = rec.storetype_id
+            WHERE co.store_type_name = rec.storetype_name
+            AND co.source_id = rec.store_type_id
         ) THEN
-            INSERT INTO BL_3NF.CE_STORE_TYPES (storetype_name, insert_dt, update_dt, source_id, source_entity, source_system)
+            INSERT INTO BL_3NF.CE_STORE_TYPES (store_type_name, insert_dt, update_dt, source_id, source_entity, source_system)
             VALUES (
                 rec.storetype_name,
                 current_date,
                 current_date,
-                rec.storetype_id,
+                rec.store_type_id,
                 'src_offline_sales',
                 'sa_offline_sales'
             );
@@ -156,7 +156,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT insert_store_types_offline_sales();
+SELECT BL_3NF.insert_store_types_offline_sales();
 
 
 
@@ -165,7 +165,7 @@ SELECT insert_store_types_offline_sales();
 
 
 
-CREATE OR REPLACE FUNCTION insert_stores_offline_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_stores_offline_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -192,7 +192,7 @@ BEGIN
                 store_name,
                 store_size,
                 shop_website,
-                storetype_id,
+                store_type_id,
                 store_address_id,
                 insert_dt,
                 update_dt,
@@ -204,7 +204,7 @@ BEGIN
                 rec.store_name,
                 rec.store_size::INT,
                 'n.a.',
-                (SELECT  storetype_id FROM BL_3NF.CE_STORE_TYPES WHERE source_id = rec.storetype_id::TEXT LIMIT 1),
+                (SELECT  store_type_id FROM BL_3NF.CE_STORE_TYPES WHERE source_id = rec.store_type_id::TEXT LIMIT 1),
                 (SELECT  store_address_id FROM BL_3NF.CE_ADDRESSES WHERE store_address = rec.store_address LIMIT 1),
                 current_date,
                 current_date,
@@ -220,7 +220,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT insert_stores_offline_sales();
+SELECT BL_3NF.insert_stores_offline_sales();
 
 
 
@@ -228,7 +228,7 @@ SELECT insert_stores_offline_sales();
 
 
 
-CREATE OR REPLACE FUNCTION insert_customers_offline_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_customers_offline_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -287,13 +287,13 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT insert_customers_offline_sales();
+SELECT BL_3NF.insert_customers_offline_sales();
 
 
 
 
 
-CREATE OR REPLACE FUNCTION insert_products_offline_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_products_offline_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -363,14 +363,14 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-SELECT insert_products_offline_sales();
+SELECT BL_3NF.insert_products_offline_sales();
 
 
 
 
 
 
-CREATE OR REPLACE FUNCTION insert_employees_online_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_employees_online_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -426,11 +426,11 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT insert_employees_online_sales();
+SELECT BL_3NF.insert_employees_online_sales();
 
 
 
-CREATE OR REPLACE FUNCTION insert_sales_online_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_sales_online_sales()
 RETURNS VOID AS $$
 DECLARE
     rec RECORD;
@@ -506,5 +506,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-SELECT insert_sales_online_sales();
+SELECT BL_3NF.insert_sales_online_sales();
 

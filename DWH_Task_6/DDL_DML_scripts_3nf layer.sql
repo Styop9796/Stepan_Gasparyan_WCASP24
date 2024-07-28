@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS BL_3NF.CE_ADDRESSES(
 
 
 CREATE TABLE IF NOT EXISTS BL_3NF.CE_STORE_TYPES(
-	storetype_id SERIAL PRIMARY KEY ,
-	storetype_name VARCHAR(50) NOT NULL,
+	store_type_id SERIAL PRIMARY KEY ,
+	store_type_name VARCHAR(50) NOT NULL,
 	insert_dt DATE NOT NULL,
 	update_dt DATE NOT NULL,
 	source_id VARCHAR(100) NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS BL_3NF.CE_STORES(
 	store_name VARCHAR(100) NOT NULL,
 	store_size INT NOT NULL,
 	shop_website VARCHAR (100) NOT NULL,
-	storetype_id INT REFERENCES BL_3NF.CE_STORE_TYPES(storetype_id),
+	store_type_id INT REFERENCES BL_3NF.CE_STORE_TYPES(store_type_id),
 	store_address_id INT REFERENCES BL_3NF.CE_ADDRESSES(store_address_id),
 	insert_dt DATE NOT NULL,
 	update_dt DATE NOT NULL,
@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS BL_3NF.CE_STORES(
 
 
 CREATE TABLE IF NOT EXISTS BL_3NF.CE_PROMO_TYPE_1(
-	promo_type1_id SERIAL PRIMARY KEY ,
-	promo_type1 VARCHAR(100) NOT NULL,
+	promo_type_1_id SERIAL PRIMARY KEY ,
+	promo_type_1 VARCHAR(100) NOT NULL,
 	insert_dt DATE NOT NULL,
 	update_dt DATE NOT NULL,
 	source_id VARCHAR(100) NOT NULL,
@@ -76,8 +76,8 @@ CREATE TABLE IF NOT EXISTS BL_3NF.CE_PROMO_TYPE_1(
 );
 
 CREATE TABLE IF NOT EXISTS BL_3NF.CE_PROMO_BIN_1(
-	promo_bin1_id SERIAL PRIMARY KEY ,
-	promo_bin1 VARCHAR(100) NOT NULL,
+	promo_bin_1_id SERIAL PRIMARY KEY ,
+	promo_bin_1 VARCHAR(100) NOT NULL,
 	insert_dt DATE NOT NULL,
 	update_dt DATE NOT NULL,
 	source_id VARCHAR(100) NOT NULL,
@@ -86,8 +86,8 @@ CREATE TABLE IF NOT EXISTS BL_3NF.CE_PROMO_BIN_1(
 );
 
 CREATE TABLE IF NOT EXISTS BL_3NF.CE_PROMO_TYPE_2(
-	promo_bin2_id SERIAL PRIMARY KEY ,
-	promo_bin2 VARCHAR(100) NOT NULL,
+	promo_bin_2_id SERIAL PRIMARY KEY ,
+	promo_bin_2 VARCHAR(100) NOT NULL,
 	insert_dt DATE NOT NULL,
 	update_dt DATE NOT NULL,
 	source_id VARCHAR(100) NOT NULL,
@@ -217,26 +217,26 @@ RETURNING *;
 
 
 
-INSERT INTO BL_3NF.CE_STORE_TYPES(storetype_id, storetype_name, insert_dt, update_dt, source_id, source_entity, source_system)
-SELECT storetype_id, storetype_name, insert_dt, update_dt, source_id, source_entity, source_system
+INSERT INTO BL_3NF.CE_STORE_TYPES(store_type_id, store_type_name, insert_dt, update_dt, source_id, source_entity, source_system)
+SELECT store_type_id, store_type_name, insert_dt, update_dt, source_id, source_entity, source_system
 FROM (
     VALUES
     (-1, 'n.a.', '1900-01-01'::DATE, '1900-01-01'::DATE, '-1', 'MANUAL', 'MANUAL')
-) AS default_row(storetype_id, storetype_name, insert_dt, update_dt, source_id, source_entity, source_system)
+) AS default_row(store_type_id, store_type_name, insert_dt, update_dt, source_id, source_entity, source_system)
 WHERE NOT EXISTS (
     SELECT 1
     FROM BL_3NF.CE_STORE_TYPES
-    WHERE BL_3NF.CE_STORE_TYPES.storetype_id = default_row.storetype_id
+    WHERE BL_3NF.CE_STORE_TYPES.store_type_id = default_row.store_type_id
 )
 RETURNING *;
 
 
-INSERT INTO BL_3NF.CE_STORES(store_id, store_name, store_size, shop_website, storetype_id, store_address_id, insert_dt, update_dt, source_id, source_entity, source_system)
-SELECT store_id, store_name, store_size, shop_website, storetype_id, store_address_id, insert_dt, update_dt, source_id, source_entity, source_system
+INSERT INTO BL_3NF.CE_STORES(store_id, store_name, store_size, shop_website, store_type_id, store_address_id, insert_dt, update_dt, source_id, source_entity, source_system)
+SELECT store_id, store_name, store_size, shop_website, store_type_id, store_address_id, insert_dt, update_dt, source_id, source_entity, source_system
 FROM (
     VALUES
     (-1, 'n.a.', -1, 'n.a.', -1, -1, '1900-01-01'::DATE, '1900-01-01'::DATE, '-1', 'MANUAL', 'MANUAL')
-) AS default_row(store_id, store_name, store_size, shop_website, storetype_id, store_address_id, insert_dt, update_dt, source_id, source_entity, source_system)
+) AS default_row(store_id, store_name, store_size, shop_website, store_type_id, store_address_id, insert_dt, update_dt, source_id, source_entity, source_system)
 WHERE NOT EXISTS (
     SELECT 1
     FROM BL_3NF.CE_STORES
@@ -246,45 +246,45 @@ RETURNING *;
 
 
 
-INSERT INTO BL_3NF.CE_PROMO_TYPE_1(promo_type1_id, promo_type1, insert_dt, update_dt, source_id, source_entity, source_system)
-SELECT promo_type1_id, promo_type1, insert_dt, update_dt, source_id, source_entity, source_system
+INSERT INTO BL_3NF.CE_PROMO_TYPE_1(promo_type_1_id, promo_type_1, insert_dt, update_dt, source_id, source_entity, source_system)
+SELECT promo_type_1_id, promo_type_1, insert_dt, update_dt, source_id, source_entity, source_system
 FROM (
     VALUES
     (-1, 'n.a.', '1900-01-01'::DATE, '1900-01-01'::DATE, '-1', 'MANUAL', 'MANUAL')
-) AS default_row(promo_type1_id, promo_type1, insert_dt, update_dt, source_id, source_entity, source_system)
+) AS default_row(promo_type_1_id, promo_type_1, insert_dt, update_dt, source_id, source_entity, source_system)
 WHERE NOT EXISTS (
     SELECT 1
     FROM BL_3NF.CE_PROMO_TYPE_1
-    WHERE BL_3NF.CE_PROMO_TYPE_1.promo_type1_id = default_row.promo_type1_id
+    WHERE BL_3NF.CE_PROMO_TYPE_1.promo_type_1_id = default_row.promo_type_1_id
 )
 RETURNING *;
 
 
 
-INSERT INTO BL_3NF.CE_PROMO_BIN_1(promo_bin1_id, promo_bin1, insert_dt, update_dt, source_id, source_entity, source_system)
-SELECT promo_bin1_id, promo_bin1, insert_dt, update_dt, source_id, source_entity, source_system
+INSERT INTO BL_3NF.CE_PROMO_BIN_1(promo_bin_1_id, promo_bin_1, insert_dt, update_dt, source_id, source_entity, source_system)
+SELECT promo_bin_1_id, promo_bin_1, insert_dt, update_dt, source_id, source_entity, source_system
 FROM (
     VALUES
     (-1, 'n.a.', '1900-01-01'::DATE, '1900-01-01'::DATE, '-1', 'MANUAL', 'MANUAL')
-) AS default_row(promo_bin1_id, promo_bin1, insert_dt, update_dt, source_id, source_entity, source_system)
+) AS default_row(promo_bin_1_id, promo_bin_1, insert_dt, update_dt, source_id, source_entity, source_system)
 WHERE NOT EXISTS (
     SELECT 1
     FROM BL_3NF.CE_PROMO_BIN_1
-    WHERE BL_3NF.CE_PROMO_BIN_1.promo_bin1_id = default_row.promo_bin1_id
+    WHERE BL_3NF.CE_PROMO_BIN_1.promo_bin_1_id = default_row.promo_bin_1_id
 )
 RETURNING *;
 
 
-INSERT INTO BL_3NF.CE_PROMO_TYPE_2(promo_bin2_id, promo_bin2, insert_dt, update_dt, source_id, source_entity, source_system)
-SELECT promo_bin2_id, promo_bin2, insert_dt, update_dt, source_id, source_entity, source_system
+INSERT INTO BL_3NF.CE_PROMO_TYPE_2(promo_bin_2_id, promo_bin_2, insert_dt, update_dt, source_id, source_entity, source_system)
+SELECT promo_bin_2_id, promo_bin_2, insert_dt, update_dt, source_id, source_entity, source_system
 FROM (
     VALUES
     (-1, 'n.a.', '1900-01-01'::DATE, '1900-01-01'::DATE, '-1', 'MANUAL', 'MANUAL')
-) AS default_row(promo_bin2_id, promo_bin2, insert_dt, update_dt, source_id, source_entity, source_system)
+) AS default_row(promo_bin_2_id, promo_bin_2, insert_dt, update_dt, source_id, source_entity, source_system)
 WHERE NOT EXISTS (
     SELECT 1
     FROM BL_3NF.CE_PROMO_TYPE_2
-    WHERE BL_3NF.CE_PROMO_TYPE_2.promo_bin2_id = default_row.promo_bin2_id
+    WHERE BL_3NF.CE_PROMO_TYPE_2.promo_bin_2_id = default_row.promo_bin_2_id
 )
 RETURNING *;
 
@@ -410,11 +410,11 @@ SELECT c.country_name,
 FROM sa_offline_sales.src_offline_sales c
 WHERE c.country_id::INT NOT IN (SELECT * FROM ids
 )
-LIMIT 1
+LIMIT 1;
 	
 
 
-DELETE FROM BL_3NF.CE_COUNTRIES WHERE country_id>0
+DELETE FROM BL_3NF.CE_COUNTRIES WHERE country_id>0;
 
 
 SELECT 
