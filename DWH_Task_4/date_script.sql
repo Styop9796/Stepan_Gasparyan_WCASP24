@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS BL_DM.DIM_DATE (
+CREATE TABLE IF NOT EXISTS BL_DM.DIM_DATES (
     event_date_surr_id DATE PRIMARY KEY,
     day_of_week INTEGER NOT NULL,
     day_of_month INTEGER NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS BL_DM.DIM_DATE (
 );
 
 
-INSERT INTO BL_DM.DIM_DATE (event_date, day_of_week, day_of_month, day_of_year, week_of_year, month, quarter, year)
+INSERT INTO BL_DM.DIM_DATES (event_date, day_of_week, day_of_month, day_of_year, week_of_year, month, quarter, year)
 SELECT
     dt,
     EXTRACT(dow FROM dt) AS day_of_week,
