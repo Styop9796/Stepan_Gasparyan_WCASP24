@@ -508,7 +508,92 @@ CALL insert_ce_sales_procedure();
 
 -- CE_STORES 
 
+CREATE SEQUENCE IF NOT EXISTS stores_id_sec;
 
+
+
+CREATE OR REPLACE FUNCTION insert_ce_stores()
+RETURNS INTEGER AS $$
+DECLARE
+    inserted_count INTEGER;
+BEGIN
+    WITH distinct_source_rows AS (
+        SELECT DISTINCT
+            store_id, 
+            store_name,
+			storetype_id,
+			storetype_name,
+			store_size,
+			store_address
+        FROM sa_offline_sales.SRC_OFFLINE_SALES
+    ),
+    inserted_rows AS (
+        INSERT INTO BL_3NF.ce_stores (
+            store_id,
+			store_name,
+			store_size,
+			shop_website,
+            store_type_id,
+			store_address_id,
+            insert_dt,
+            source_id,
+            source_entity,
+            source_system
+        )
+        SELECT 
+            nextval('stores_id_sec'),
+            dsr.store_name,
+            dsr.store_size::INT,
+			'n.a.',
+			dsr.storetype_id::TEXT,
+			dsr.store_address::TEXT,
+			
+            current_timestamp,
+            dsr.store_id,
+            'SRC_OFFLINE_SALES',
+            'BL_CL'
+        FROM distinct_source_rows dsr
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM BL_3NF.ce_stores c
+            WHERE c.source_id = dsr.store_id
+              AND c.store_name = dsr.store_name 
+              AND c.store_size::TEXT = dsr.store_size::TEXT
+        )
+        RETURNING *
+    )
+    SELECT COUNT(*) INTO inserted_count FROM inserted_rows;
+
+    RETURN inserted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE PROCEDURE insert_ce_stores_procedure()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    inserted_count INTEGER;
+BEGIN
+    inserted_count := insert_ce_stores();
+
+    INSERT INTO logging (procedure_name, rows_affected)
+    VALUES ('insert_ce_stores_procedure', inserted_count);
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Log any errors that occur
+        INSERT INTO logging (procedure_name, rows_affected)
+        VALUES ('insert_ce_stores_procedure', -1);
+
+        -- Raise the exception to propagate the error
+        RAISE NOTICE 'Error accured';
+END;
+$$;
+
+
+CALL insert_ce_sales_procedure();
 
 
 
