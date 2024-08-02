@@ -441,13 +441,13 @@ BEGIN
         FROM sa_online_sales.src_online_sales
     LOOP
         SELECT sale_id INTO target_sale_id
-        FROM BL_3NF.CE_SALES_SCD ci
+        FROM BL_3NF.CE_SALES ci
         WHERE ci.source_id = rec.invoice_number;
 
         -- Check for existence in the target table
         IF NOT EXISTS (
             SELECT 1
-            FROM BL_3NF.CE_SALES_SCD ad
+            FROM BL_3NF.CE_SALES ad
             WHERE ad.date = rec.date
             AND ad.product_id::TEXT = rec.product_id
             AND ad.employee_id = rec.employee_id
@@ -462,7 +462,7 @@ BEGIN
 		)
 			
 		THEN
-            INSERT INTO BL_3NF.CE_SALES_SCD (
+            INSERT INTO BL_3NF.CE_SALES (
 				date,
 				product_id,
 				employee_id,

@@ -184,7 +184,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_COUNTRIES 
     WHERE BL_3NF.CE_COUNTRIES.country_id = default_row.country_id
 )
-RETURNING *;
+;
 
 
 
@@ -199,7 +199,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_CITIES
     WHERE BL_3NF.CE_CITIES.city_id = default_row.city_id
 )
-RETURNING *;
+;
 
 
 INSERT INTO BL_3NF.CE_ADDRESSES(store_address_id, store_address, store_state, city_id, insert_dt, update_dt, source_id, source_entity, source_system)
@@ -213,7 +213,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_ADDRESSES
     WHERE BL_3NF.CE_ADDRESSES.store_address_id = default_row.store_address_id
 )
-RETURNING *;
+;
 
 
 
@@ -228,7 +228,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_STORE_TYPES
     WHERE BL_3NF.CE_STORE_TYPES.store_type_id = default_row.store_type_id
 )
-RETURNING *;
+;
 
 
 INSERT INTO BL_3NF.CE_STORES(store_id, store_name, store_size, shop_website, store_type_id, store_address_id, insert_dt, update_dt, source_id, source_entity, source_system)
@@ -242,7 +242,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_STORES
     WHERE BL_3NF.CE_STORES.store_id = default_row.store_id
 )
-RETURNING *;
+;
 
 
 
@@ -257,7 +257,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_PROMO_TYPE_1
     WHERE BL_3NF.CE_PROMO_TYPE_1.promo_type_1_id = default_row.promo_type_1_id
 )
-RETURNING *;
+;
 
 
 
@@ -272,7 +272,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_PROMO_BIN_1
     WHERE BL_3NF.CE_PROMO_BIN_1.promo_bin_1_id = default_row.promo_bin_1_id
 )
-RETURNING *;
+;
 
 
 INSERT INTO BL_3NF.CE_PROMO_TYPE_2(promo_bin_2_id, promo_bin_2, insert_dt, update_dt, source_id, source_entity, source_system)
@@ -286,7 +286,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_PROMO_TYPE_2
     WHERE BL_3NF.CE_PROMO_TYPE_2.promo_bin_2_id = default_row.promo_bin_2_id
 )
-RETURNING *;
+;
 
 
 INSERT INTO BL_3NF.CE_EMPLOYEES_SCD(employee_id, employee_name, employee_last_name, employee_email, start_dt, end_dt, is_active, insert_dt, source_id, source_entity, source_system)
@@ -300,7 +300,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_EMPLOYEES_SCD
     WHERE BL_3NF.CE_EMPLOYEES_SCD.employee_id = default_row.employee_id
 )
-RETURNING *;
+;
 
 
 INSERT INTO BL_3NF.CE_PRODUCTS_SCD(
@@ -329,7 +329,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_PRODUCTS_SCD
     WHERE BL_3NF.CE_PRODUCTS_SCD.product_id = default_row.product_id
 )
-RETURNING *;
+;
 
 
 INSERT INTO BL_3NF.CE_CUSTOMERS_SCD(
@@ -354,7 +354,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_CUSTOMERS_SCD
     WHERE BL_3NF.CE_CUSTOMERS_SCD.customer_id = default_row.customer_id
 )
-RETURNING *;
+;
 
 
 
@@ -384,7 +384,7 @@ WHERE NOT EXISTS (
     FROM BL_3NF.CE_SALES_SCD
     WHERE BL_3NF.CE_SALES_SCD.sale_id = default_row.sale_id
 )
-RETURNING *;
+;
 
 
 
