@@ -1,13 +1,15 @@
 """
 Module for preparing inverted indexes based on uploaded documents
 """
-
+import json
 import sys
+import re
 from argparse import ArgumentParser, ArgumentTypeError, FileType
 from io import TextIOWrapper
 from typing import Dict, List
 
 DEFAULT_PATH_TO_STORE_INVERTED_INDEX = "inverted.index"
+PATH_TO_STOP_WORDS = 'stop_words_en.txt'
 
 
 class EncodedFileType(FileType):
@@ -44,11 +46,18 @@ class InvertedIndex:
     """
 
     def __init__(self, words_ids: Dict[str, List[int]]):
-        pass
+        self.words_ids = words_ids
 
     def query(self, words: List[str]) -> List[int]:
         """Return the list of relevant documents for the given query"""
-        pass
+        if not words:
+            return []
+
+        result_set = self.words_ids.get(words[0], set())
+        for word in words[1:]:
+            result_set &= self.words_ids.get(word, set())
+
+        return sorted(result_set)
 
     def dump(self, filepath: str) -> None:
         """
@@ -56,7 +65,9 @@ class InvertedIndex:
         :param filepath: path to file with documents
         :return: None
         """
-        pass
+        words_ids_serializable = {word: list(doc_ids) for word, doc_ids in self.words_ids.items()}
+        with open(filepath, 'w', encoding='utf-8') as file:
+            json.dump(words_ids_serializable, file)
 
     @classmethod
     def load(cls, filepath: str):
@@ -65,7 +76,10 @@ class InvertedIndex:
         :param filepath: path to file with documents
         :return: InvertedIndex
         """
-        pass
+        with open(filepath, 'r', encoding='utf-8') as file:
+            words_ids = json.load(file)
+            words_ids = {word: set(doc_ids) for word, doc_ids in words_ids.items()}
+        return cls(words_ids)
 
 
 def load_documents(filepath: str) -> Dict[int, str]:
@@ -74,16 +88,34 @@ def load_documents(filepath: str) -> Dict[int, str]:
     :param filepath: path to file with documents
     :return: Dict[int, str]
     """
-    pass
+    document = {}
+    with open(filepath, 'r', encoding='utf-8') as file:
+        for line in file.readlines():
+            doc_id, content = line.lower().split("\t", 1)
+            doc_id = int(doc_id)
+            words = re.split(r"\W+", content)
+            document[doc_id]=words
 
-
-def build_inverted_index(documents: Dict[int, str]) -> InvertedIndex:
+    return document
+def build_inverted_index(document: Dict[int, str]) -> InvertedIndex:
     """
     Builder of inverted indexes based on documents
     :param documents: dict with documents
     :return: InvertedIndex class
     """
-    pass
+
+    words_ids = {}
+    with open(PATH_TO_STOP_WORDS,'r',encoding='utf-8') as stop_word:
+        st_word_list = ([i.strip() for i in list(stop_word)])
+
+    for doc_id, text in document.items():
+        for word in text:
+            if word not in words_ids :#and word not in st_word_list:
+                if word in st_word_list:
+                    continue
+                words_ids[word] = set()
+            words_ids[word].add(doc_id)
+    return InvertedIndex(words_ids)
 
 
 def callback_build(arguments) -> None:
@@ -172,7 +204,7 @@ def setup_subparsers(parser) -> None:
         "--query_from_file",
         dest="query",
         type=EncodedFileType("r", encoding="utf-8"),
-        # default=TextIOWrapper(sys.stdin.buffer, encoding='utf-8'),
+        default=TextIOWrapper(sys.stdin.buffer, encoding='utf-8'),
         help="query file to get queries for inverted index",
     )
     query_parser.set_defaults(callback=callback_query)
@@ -193,3 +225,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
