@@ -1,7 +1,6 @@
 --- LOGGIN TABLE 
 
 
-
 CREATE TABLE IF NOT EXISTS  logging (
     log_id SERIAL PRIMARY KEY,
     log_datetime DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -594,6 +593,113 @@ $$;
 
 
 CALL insert_ce_sales_procedure();
+
+
+
+----------------------------------------------------------------------
+
+
+-- CE_CUSTOMERS_SCD
+
+
+
+CREATE SEQUENCE IF NOT EXISTS customer_id_sec;
+
+
+CREATE INDEX idx_ce_customers_source_id ON BL_3NF.ce_customers_scd(source_id);
+CREATE INDEX idx_src_offline_sales_customer_id ON sa_offline_sales.SRC_OFFLINE_SALES(customer_id);
+	
+CREATE OR REPLACE FUNCTION insert_or_update_ce_customers_scd()
+RETURNS TABLE (inserted_count INT, updated_count INT) AS $$
+DECLARE
+    inserted_count INT := 0;
+    updated_count INT := 0;
+    v_record RECORD;
+BEGIN
+    FOR v_record IN (SELECT customer_id, f_name, l_name, email, cust_phone FROM sa_offline_sales.src_offline_sales)
+    LOOP
+        
+        -- Check if the record exists in the target table
+        IF EXISTS (
+            SELECT 1
+            FROM BL_3NF.ce_customers_scd cs
+            WHERE cs.source_id::INT = v_record.customer_id::INT
+        ) THEN
+
+			IF NOT EXISTS (
+                SELECT 1
+                FROM BL_3NF.ce_customers_scd cs
+                WHERE cs.source_id::INT = v_record.customer_id::INT AND 
+                	cs.f_name = v_record.f_name AND 
+                     cs.l_name = v_record.l_name AND
+                     cs.email = v_record.email AND 
+                     cs.cust_phone = v_record.cust_phone)
+             THEN
+                UPDATE BL_3NF.ce_customers_scd
+                SET 
+					end_dt = current_timestamp,
+					is_active = 'N'
+                WHERE source_id::INT = v_record.customer_id::INT AND is_active = 'Y';
+				
+				INSERT INTO BL_3NF.ce_customers_scd (customer_id, f_name, l_name, email, cust_phone, start_dt, end_dt, is_active, insert_dt,
+                                                 source_id, source_entity, source_system)
+				VALUES (nextval('customer_id_sec'), v_record.f_name, v_record.l_name, v_record.email, v_record.cust_phone,
+						current_timestamp, '9999-01-01', 'Y', current_timestamp, v_record.customer_id, 'SRC_OFFLINE_SALES', 'BL_CL');
+				updated_count := updated_count + 1;
+				
+				
+				
+            END IF;
+        ELSE
+            -- Record does not exist, insert it
+            INSERT INTO BL_3NF.ce_customers_scd (customer_id, f_name, l_name, email, cust_phone, start_dt, end_dt, is_active, insert_dt,
+                                                 source_id, source_entity, source_system)
+            VALUES (nextval('customer_id_sec'), v_record.f_name, v_record.l_name, v_record.email, v_record.cust_phone,
+                    current_timestamp, '9999-01-01', 'Y', current_timestamp, v_record.customer_id, 'SRC_OFFLINE_SALES', 'BL_CL');
+            inserted_count := inserted_count + 1;
+        END IF;
+    END LOOP;
+
+    RETURN QUERY SELECT inserted_count, updated_count;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE PROCEDURE insert_ce_customers_scd_procedure()
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    inserted_count INTEGER;
+    updated_count INTEGER;
+BEGIN
+    -- Call the function and capture the returned values
+    SELECT * INTO inserted_count, updated_count
+    FROM insert_or_update_ce_customers_scd();
+    
+    -- Log the results
+    INSERT INTO logging (procedure_name, rows_affected)
+    VALUES ('insert_ce_customers_scd_procedure', inserted_count);
+
+    INSERT INTO logging (procedure_name, rows_affected)
+    VALUES ('insert_ce_customers_scd_procedure_updates', updated_count);
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Log any errors that occur
+        INSERT INTO logging (procedure_name, rows_affected)
+        VALUES ('insert_ce_customers_scd_procedure', -1);
+
+        -- Raise the exception to propagate the error
+        RAISE NOTICE 'Error occurred: %', SQLERRM;
+END;
+$$;
+
+
+CALL insert_ce_customers_scd_procedure();
+
+
+
 
 
 
