@@ -68,7 +68,7 @@ $$;
 
 
 
-CALL insert_DM_CUSTOMERS_SCD_procedure();
+
 
 
 
@@ -138,7 +138,6 @@ $$;
 
 
 
-CALL insert_DIM_DATES_procedure();
 
 
 
@@ -204,7 +203,6 @@ $$;
 
 
 
-CALL insert_DIM_EMPLOYEES_procedure();
 
 
 
@@ -284,7 +282,6 @@ $$;
 
 
 
-CALL insert_DIM_PRODUCTS_procedure();
 
 
 -----------------------------------------------
@@ -343,10 +340,6 @@ EXCEPTION
         RAISE NOTICE 'Error occurred: %', SQLERRM;
 END;
 $$;
-
-
-
-CALL insert_DIM_PROMO_TYPE_1_procedure();
 
 
 
@@ -412,14 +405,6 @@ $$;
 
 
 
-CALL insert_DIM_PROMO_TYPE_1_procedure();
-
-
-
-
-
-
-
 
 
 -----------------------------------------------
@@ -478,14 +463,6 @@ EXCEPTION
         RAISE NOTICE 'Error occurred: %', SQLERRM;
 END;
 $$;
-
-
-
-CALL insert_DIM_PROMO_TYPE_2_procedure();
-
-
-
-
 
 
 
@@ -574,12 +551,6 @@ $$;
 
 
 
-CALL insert_DIM_STORES_procedure();
-
-
-
-
-
 
 
 -----------------------------------------------
@@ -628,19 +599,19 @@ BEGIN
                 (SELECT event_date_surr_id FROM BL_DM.DIM_DATES dd WHERE dd.event_date_surr_id::TEXT = s.date::TEXT),
             
             COALESCE(
-                (SELECT product_surr_id FROM BL_DM.DIM_PRODUCTS dp WHERE dp.product_surr_id::TEXT = s.product_id::TEXT),
+                (SELECT product_surr_id FROM BL_DM.DIM_PRODUCTS dp WHERE dp.source_id::TEXT = s.product_id::TEXT),
                 default_product_surr_id
             ),
             COALESCE(
-                (SELECT employee_surr_id FROM BL_DM.DIM_EMPLOYEES de WHERE de.employee_surr_id::TEXT= s.employee_id::TEXT),
+                (SELECT employee_surr_id FROM BL_DM.DIM_EMPLOYEES de WHERE de.source_id::TEXT= s.employee_id::TEXT),
                 default_employee_surr_id
             ),
             COALESCE(
-                (SELECT store_surr_id FROM BL_DM.DIM_STORES ds WHERE ds.store_surr_id::TEXT = s.store_id::TEXT),
+                (SELECT store_surr_id FROM BL_DM.DIM_STORES ds WHERE ds.source_id::TEXT = s.store_id::TEXT),
                 default_store_surr_id
             ),
             COALESCE(
-                (SELECT customer_surr_id FROM BL_DM.DIM_CUSTOMERS_SCD dc WHERE dc.customer_surr_id::TEXT = s.customer_id::TEXT),
+                (SELECT customer_surr_id FROM BL_DM.DIM_CUSTOMERS_SCD dc WHERE dc.source_id::TEXT = s.customer_id::TEXT),
                 default_customer_surr_id
             ),
             s.quantity,
@@ -679,19 +650,40 @@ END;
 $$;
 
 
+--------\
 
+--MAIN PROCEDURE 
 
-
-
+CALL insert_DM_CUSTOMERS_SCD_procedure();
+CALL insert_DIM_DATES_procedure();
+CALL insert_DIM_EMPLOYEES_procedure();
+CALL insert_DIM_PRODUCTS_procedure();
+CALL insert_DIM_PROMO_TYPE_1_procedure();
+CALL insert_DIM_PROMO_BIN_1_procedure();
+CALL insert_DIM_PROMO_TYPE_2_procedure();
+CALL insert_DIM_STORES_procedure();
 CALL insert_FCT_SALES_DD_procedure();
 
 
 
+CREATE OR REPLACE PROCEDURE main_insert_procedures()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    CALL insert_DM_CUSTOMERS_SCD_procedure();
+    CALL insert_DIM_DATES_procedure();
+    CALL insert_DIM_EMPLOYEES_procedure();
+    CALL insert_DIM_PRODUCTS_procedure();
+    CALL insert_DIM_PROMO_TYPE_1_procedure();
+    CALL insert_DIM_PROMO_BIN_1_procedure(); -- Duplicate call, verify if intentional
+    CALL insert_DIM_PROMO_TYPE_2_procedure();
+    CALL insert_DIM_STORES_procedure();
+    CALL insert_FCT_SALES_DD_procedure();
+END;
+$$;
 
-
-
-
-
+-- Execute the main procedure
+CALL main_insert_procedures();
 
 
 
