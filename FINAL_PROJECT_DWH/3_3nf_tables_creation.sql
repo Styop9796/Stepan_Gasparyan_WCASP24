@@ -1,10 +1,11 @@
+CREATE SCHEMA IF NOT EXISTS BL_3NF;
 
 CREATE OR REPLACE PROCEDURE public.create_3nf_and_tables_procedure()
 LANGUAGE plpgsql
 AS $$
 BEGIN
 
-		CREATE SCHEMA IF NOT EXISTS BL_3NF;
+		
 
 		CREATE TABLE IF NOT EXISTS BL_3NF.CE_COUNTRIES(
 			    country_id integer NOT NULL ,
@@ -235,6 +236,65 @@ END;
 $$;
 
 
+----------------------------------------------------------
+
+
+--procedure for partitioning 
+CREATE OR REPLACE PROCEDURE BL_3NF.create_sales_partitions(start_date DATE, end_date DATE)
+LANGUAGE plpgsql AS $$
+DECLARE
+    partition_start DATE := start_date;
+    partition_end DATE;
+BEGIN
+    WHILE partition_start <= end_date LOOP
+        -- Calculate the end date of the current partition
+        partition_end := partition_start + INTERVAL '2 months';
+
+        -- Define the partition name based on the start date
+        EXECUTE format(
+            'CREATE TABLE IF NOT EXISTS BL_3NF.ce_sales_%s_to_%s PARTITION OF BL_3NF.ce_sales FOR VALUES FROM (%L) TO (%L)',
+            to_char(partition_start, 'YYYYMM'),
+            to_char(partition_end, 'YYYYMM'),
+            partition_start,
+            partition_end
+        );
+
+        -- Move to the next 2-month range
+        partition_start := partition_end;
+    END LOOP;
+END;
+$$;
+
+
+
+------------------------------------------
+
+
+CREATE OR REPLACE PROCEDURE BL_3NF.create_partitions_on_sales()
+LANGUAGE plpgsql
+AS $$
+DECLARE 
+max_date DATE;
+BEGIN
+			SELECT max(date) FROM sa_offline_sales.src_offline_sales INTO max_date;
+			CALL BL_3NF.create_sales_partitions('2022-01-01'::DATE, max_date);   
+		
+			RAISE NOTICE 'Partitions are created for fact sales';
+EXCEPTION
+    WHEN OTHERS THEN
+   
+        INSERT INTO logging (procedure_name, rows_affected,message)
+        VALUES ('create_partitions_on_sales', -1,'failed');
+
+        -- Raise the exception to propagate the error
+        RAISE NOTICE 'Error occurred: %', SQLERRM;
+END;
+$$;
+
+-------
+
+
+
 
 
 
@@ -301,7 +361,7 @@ BEGIN
 
 	-- Insert default row into CE_SALES
 	INSERT INTO BL_3NF.CE_SALES (sale_id, date, product_id, employee_id, store_id, customer_id, quantity, stock, price, cost, sales_channel, promo_type_1, promo_bin_1, promo_type_2, insert_dt, source_id, source_entity, source_system)
-	VALUES (-1, CURRENT_TIMESTAMP, 'n.a.', -1, 'n.a.', -1, -1, -1, -1, -1, 'n.a.', 'n.a.', 'n.a.', 'n.a.', CURRENT_TIMESTAMP, 'n.a.', 'MANUAL', 'MANUAL')
+	VALUES (-1, '2023-12-31', 'n.a.', -1, 'n.a.', -1, -1, -1, -1, -1, 'n.a.', 'n.a.', 'n.a.', 'n.a.', CURRENT_TIMESTAMP, 'n.a.', 'MANUAL', 'MANUAL')
 	ON CONFLICT DO NOTHING;
 
 
@@ -320,6 +380,7 @@ $$;
 CALL BL_3NF.insert_default_rows_procedure();
 CALL public.create_3nf_and_tables_procedure();
 CALL BL_3NF.create_sequencies_for_3nf_tables_procedure();
+CALL BL_3NF.create_partitions_on_sales();
 
 
 
