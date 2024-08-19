@@ -1,3 +1,60 @@
+
+
+--procedure for partitioning 
+CREATE OR REPLACE PROCEDURE BL_3NF.create_sales_partitions(start_date DATE, end_date DATE)
+LANGUAGE plpgsql AS $$
+DECLARE
+    partition_start DATE := start_date;
+    partition_end DATE;
+BEGIN
+    WHILE partition_start <= end_date LOOP
+        -- Calculate the end date of the current partition
+        partition_end := partition_start + INTERVAL '2 months';
+
+        -- Define the partition name based on the start date
+        EXECUTE format(
+            'CREATE TABLE IF NOT EXISTS BL_3NF.ce_sales_%s_to_%s PARTITION OF BL_3NF.ce_sales FOR VALUES FROM (%L) TO (%L)',
+            to_char(partition_start, 'YYYYMM'),
+            to_char(partition_end, 'YYYYMM'),
+            partition_start,
+            partition_end
+        );
+
+        -- Move to the next 2-month range
+        partition_start := partition_end;
+    END LOOP;
+END;
+$$;
+
+
+
+------------------------------------------
+
+
+CREATE OR REPLACE PROCEDURE BL_3NF.create_partitions_on_sales()
+LANGUAGE plpgsql
+AS $$
+DECLARE 
+max_date DATE;
+BEGIN
+			SELECT max(date) FROM sa_offline_sales.src_offline_sales INTO max_date;
+			CALL BL_3NF.create_sales_partitions('2022-01-01'::DATE, max_date);   
+		
+			RAISE NOTICE 'Partitions are created for fact sales';
+EXCEPTION
+    WHEN OTHERS THEN
+   
+        INSERT INTO logging (procedure_name, rows_affected,message)
+        VALUES ('create_partitions_on_sales', -1,'failed');
+
+        -- Raise the exception to propagate the error
+        RAISE NOTICE 'Error occurred: %', SQLERRM;
+END;
+$$;
+
+
+
+
 -- Insert records into ce_sales in BL_3NF layer 
 
 CREATE OR REPLACE PROCEDURE BL_3NF.insert_online_sales_into_3nf_procedure()
@@ -142,7 +199,7 @@ BEGIN
 				current_date,
 				rec.invoice_number,
 				'src_offline_sales',
-                'sa_ffline_sales'
+                'sa_offline_sales'
             );
 			inserted_count := inserted_count + 1;
         END IF;
