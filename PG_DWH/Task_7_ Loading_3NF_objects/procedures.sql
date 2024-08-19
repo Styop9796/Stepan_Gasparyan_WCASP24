@@ -1,13 +1,47 @@
 --- LOGGIN TABLE 
 
 
-CREATE TABLE IF NOT EXISTS  logging (
+CREATE TABLE IF NOT EXISTS  public.logging (
     log_id SERIAL PRIMARY KEY,
     log_datetime DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     procedure_name VARCHAR(255) NOT NULL,
-    rows_affected INT
+    rows_affected INT,
+	message TEXT
 );
 
+-------------------------------------------------------
+
+--CREATE ROLE developer;
+
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO developer;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA sa_offline_sales TO developer;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA sa_online_sales TO developer;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA BL_3NF TO developer;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA BL_DM TO developer;
+
+
+
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO developer;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA sa_offline_sales TO developer;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA sa_online_sales TO developer;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA BL_3NF TO developer;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA BL_DM TO developer;
+
+
+
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO developer;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA sa_offline_sales TO developer;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA sa_online_sales TO developer;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA BL_3NF TO developer;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA BL_DM TO developer;
+
+
+GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA public TO developer;
+GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA sa_offline_sales TO developer;
+GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA sa_online_sales TO developer;
+GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA BL_3NF TO developer;
+GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA BL_DM TO developer;
 
 
 ---------------------------------------------------------
@@ -18,11 +52,11 @@ CREATE TABLE IF NOT EXISTS  logging (
 
 
 
-CREATE SEQUENCE IF NOT EXISTS country_id_sec;
+CREATE SEQUENCE IF NOT EXISTS BL_3NF.country_id_sec;
 
 
 
-CREATE OR REPLACE FUNCTION insert_ce_countries()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_ce_countries()
 RETURNS INTEGER AS $$
 DECLARE
     inserted_count INTEGER;
@@ -43,7 +77,7 @@ BEGIN
             source_system
         )
         SELECT 
-            nextval('country_id_sec'),
+            nextval('BL_3NF.country_id_sec'),
             dsr.country_name,
             current_timestamp,
             dsr.country_id,
@@ -67,7 +101,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE PROCEDURE insert_ce_countries_procedure()
+CREATE OR REPLACE PROCEDURE BL_3NF.insert_ce_countries_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -91,7 +125,7 @@ $$;
 
 
 
-CALL insert_ce_countries_procedure();
+CALL BL_3NF.insert_ce_countries_procedure();
 
 
 
@@ -100,11 +134,11 @@ CALL insert_ce_countries_procedure();
 
 -- CE_CITIES 
 
-CREATE SEQUENCE IF NOT EXISTS city_id_sec;
+CREATE SEQUENCE IF NOT EXISTS BL_3NF.city_id_sec;
 
 
 
-CREATE OR REPLACE FUNCTION insert_ce_cities()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_ce_cities()
 RETURNS INTEGER AS $$
 DECLARE
     inserted_count INTEGER;
@@ -127,7 +161,7 @@ BEGIN
             source_system
         )
         SELECT 
-            nextval('city_id_sec'),
+            nextval('BL_3NF.city_id_sec'),
             dsr.city_name,
             dsr.country_id::TEXT,
             current_timestamp,
@@ -154,7 +188,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE PROCEDURE insert_ce_cities_procedure()
+CREATE OR REPLACE PROCEDURE BL_3NF.insert_ce_cities_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -177,7 +211,7 @@ END;
 $$;
 
 
-CALL insert_ce_cities_procedure();
+CALL BL_3NF.insert_ce_cities_procedure();
 
 
 ------------------------------------------------------------------------
@@ -185,11 +219,11 @@ CALL insert_ce_cities_procedure();
 
 -- CE_ ADDRESSES
 
-CREATE SEQUENCE IF NOT EXISTS address_id_sec;
+CREATE SEQUENCE IF NOT EXISTS BL_3NF.address_id_sec;
 
 
 
-CREATE OR REPLACE FUNCTION insert_ce_addreses()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_ce_addreses()
 RETURNS INTEGER AS $$
 DECLARE
     inserted_count INTEGER;
@@ -213,7 +247,7 @@ BEGIN
             source_system
         )
         SELECT 
-            nextval('address_id_sec'),
+            nextval('BL_3NF.address_id_sec'),
             dsr.store_address,
             dsr.store_state,
 			dsr.city_id::TEXT,
@@ -238,11 +272,11 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-SELECT insert_ce_addreses();
+SELECT BL_3NF.insert_ce_addreses();
 
 
 
-CREATE OR REPLACE PROCEDURE insert_ce_addresses_procedure()
+CREATE OR REPLACE PROCEDURE BL_3NF.insert_ce_addresses_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -265,7 +299,7 @@ END;
 $$;
 
 
-CALL insert_ce_addresses_procedure();
+CALL BL_3NF.insert_ce_addresses_procedure();
 
 -------------------------------------------------------------
 
@@ -274,11 +308,11 @@ CALL insert_ce_addresses_procedure();
 
 -- CE_PRODUCTS
 
-CREATE SEQUENCE IF NOT EXISTS products_id_sec;
+CREATE SEQUENCE IF NOT EXISTS BL_3NF.products_id_sec;
 
 
 
-CREATE OR REPLACE FUNCTION insert_ce_products()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_ce_products()
 RETURNS INTEGER AS $$
 DECLARE
     inserted_count INTEGER;
@@ -315,7 +349,7 @@ BEGIN
             source_system
         )
         SELECT 
-            nextval('products_id_sec'),
+            nextval('BL_3NF.products_id_sec'),
             dsr.product_name,
             dsr.product_length::NUMERIC,
 			dsr.product_depth::NUMERIC,
@@ -345,10 +379,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-SELECT insert_ce_products();
+SELECT BL_3NF.insert_ce_products();
 
 
-CREATE OR REPLACE PROCEDURE insert_ce_products_procedure()
+CREATE OR REPLACE PROCEDURE BL_3NF.insert_ce_products_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -371,7 +405,7 @@ END;
 $$;
 
 
-CALL insert_ce_products_procedure();
+CALL BL_3NF.insert_ce_products_procedure();
 
 
 ------------------------------------------------------
@@ -382,7 +416,7 @@ CALL insert_ce_products_procedure();
 
 
 
-CREATE SEQUENCE IF NOT EXISTS sales_id_sec;
+CREATE SEQUENCE IF NOT EXISTS BL_3NF.sales_id_sec;
 
 
 
@@ -393,7 +427,7 @@ CREATE INDEX idx_src_offline_sales_invoice_number ON sa_offline_sales.SRC_OFFLIN
 
 
 
-CREATE OR REPLACE FUNCTION insert_ce_sales()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_ce_sales()
 RETURNS INTEGER AS $$
 DECLARE
     inserted_count INTEGER;
@@ -439,7 +473,7 @@ BEGIN
             source_system
         )
         SELECT 
-            nextval('sales_id_sec'),
+            nextval('BL_3NF.sales_id_sec'),
             dsr.date::DATE,
 			dsr.product_id::TEXT,
 			dsr.employee_id::INT,
@@ -474,7 +508,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE PROCEDURE insert_ce_sales_procedure()
+CREATE OR REPLACE PROCEDURE BL_3NF.insert_ce_sales_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -497,7 +531,7 @@ END;
 $$;
 
 
-CALL insert_ce_sales_procedure();
+CALL BL_3NF.insert_ce_sales_procedure();
 
 
 
@@ -507,11 +541,11 @@ CALL insert_ce_sales_procedure();
 
 -- CE_STORES 
 
-CREATE SEQUENCE IF NOT EXISTS stores_id_sec;
+CREATE SEQUENCE IF NOT EXISTS BL_3NF.stores_id_sec;
 
 
 
-CREATE OR REPLACE FUNCTION insert_ce_stores()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_ce_stores()
 RETURNS INTEGER AS $$
 DECLARE
     inserted_count INTEGER;
@@ -540,7 +574,7 @@ BEGIN
             source_system
         )
         SELECT 
-            nextval('stores_id_sec'),
+            nextval('BL_3NF.stores_id_sec'),
             dsr.store_name,
             dsr.store_size::INT,
 			'n.a.',
@@ -569,7 +603,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE PROCEDURE insert_ce_stores_procedure()
+CREATE OR REPLACE PROCEDURE BL_3NF.insert_ce_stores_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -592,7 +626,7 @@ END;
 $$;
 
 
-CALL insert_ce_sales_procedure();
+CALL BL_3NF.insert_ce_sales_procedure();
 
 
 
@@ -603,13 +637,13 @@ CALL insert_ce_sales_procedure();
 
 
 
-CREATE SEQUENCE IF NOT EXISTS customer_id_sec;
+CREATE SEQUENCE IF NOT EXISTS BL_3NF.customer_id_sec;
 
 
 CREATE INDEX idx_ce_customers_source_id ON BL_3NF.ce_customers_scd(source_id);
 CREATE INDEX idx_src_offline_sales_customer_id ON sa_offline_sales.SRC_OFFLINE_SALES(customer_id);
 	
-CREATE OR REPLACE FUNCTION insert_or_update_ce_customers_scd()
+CREATE OR REPLACE FUNCTION BL_3NF.insert_or_update_ce_customers_scd()
 RETURNS TABLE (inserted_count INT, updated_count INT) AS $$
 DECLARE
     inserted_count INT := 0;
@@ -643,7 +677,7 @@ BEGIN
 				
 				INSERT INTO BL_3NF.ce_customers_scd (customer_id, f_name, l_name, email, cust_phone, start_dt, end_dt, is_active, insert_dt,
                                                  source_id, source_entity, source_system)
-				VALUES (nextval('customer_id_sec'), v_record.f_name, v_record.l_name, v_record.email, v_record.cust_phone,
+				VALUES (nextval('BL_3NF.customer_id_sec'), v_record.f_name, v_record.l_name, v_record.email, v_record.cust_phone,
 						current_timestamp, '9999-01-01', 'Y', current_timestamp, v_record.customer_id, 'SRC_OFFLINE_SALES', 'BL_CL');
 				updated_count := updated_count + 1;
 				
@@ -654,7 +688,7 @@ BEGIN
             -- Record does not exist, insert it
             INSERT INTO BL_3NF.ce_customers_scd (customer_id, f_name, l_name, email, cust_phone, start_dt, end_dt, is_active, insert_dt,
                                                  source_id, source_entity, source_system)
-            VALUES (nextval('customer_id_sec'), v_record.f_name, v_record.l_name, v_record.email, v_record.cust_phone,
+            VALUES (nextval('BL_3NF.customer_id_sec'), v_record.f_name, v_record.l_name, v_record.email, v_record.cust_phone,
                     current_timestamp, '9999-01-01', 'Y', current_timestamp, v_record.customer_id, 'SRC_OFFLINE_SALES', 'BL_CL');
             inserted_count := inserted_count + 1;
         END IF;
@@ -666,7 +700,7 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE PROCEDURE insert_ce_customers_scd_procedure()
+CREATE OR REPLACE PROCEDURE BL_3NF.insert_ce_customers_scd_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
@@ -696,7 +730,7 @@ END;
 $$;
 
 
-CALL insert_ce_customers_scd_procedure();
+CALL BL_3NF.insert_ce_customers_scd_procedure();
 
 
 
