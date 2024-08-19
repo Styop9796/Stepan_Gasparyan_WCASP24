@@ -82,23 +82,12 @@ AS $$
 DECLARE
     inserted_count INTEGER;
 BEGIN
-    -- Insert into the target table and count the inserted rows
-    WITH inserted AS (
-        INSERT INTO BL_DM.DIM_DATES (
-            event_date_surr_id,
-            day_of_week,
-            day_of_month,
-            day_of_year,
-            week_of_year,
-            month,
-            quarter,
-            year,
-            source_id,
-            source_entity,
-            source_system
+    EXECUTE format(
+        'INSERT INTO BL_DM.DIM_DATES (
+            event_date_surr_id, day_of_week, day_of_month, day_of_year, week_of_year, month, quarter, year, source_id, source_entity, source_system
         )
         SELECT
-            dt ,
+            nextval(''BL_DM.date_id_sec''),
             EXTRACT(dow FROM dt) AS day_of_week,
             EXTRACT(day FROM dt) AS day_of_month,
             EXTRACT(doy FROM dt) AS day_of_year,
@@ -106,32 +95,23 @@ BEGIN
             EXTRACT(month FROM dt) AS month,
             EXTRACT(quarter FROM dt) AS quarter,
             EXTRACT(year FROM dt) AS year,
-            '9999-01-01', -- Placeholder for some_column1
-            'MANUAL', -- Placeholder for some_column2
-            'MANUAL' -- Placeholder for some_column3
-        FROM generate_series('2021-10-01'::date, '2024-02-01'::date, '1 day'::interval) AS dt
+            ''9999-01-01'',
+            ''MANUAL'',
+            ''MANUAL''
+        FROM generate_series(''2021-10-01''::date, ''2024-02-01''::date, ''1 day''::interval) AS dt
         WHERE NOT EXISTS (
-            SELECT 1 
-            FROM BL_DM.DIM_DATES c
-            WHERE c.event_date_surr_id = dt
-        )
-        RETURNING 1 -- Use RETURNING to count the rows
-    )
-    SELECT COUNT(*) INTO inserted_count FROM inserted;
+            SELECT 1
+            FROM BL_DM.DIM_DATES
+            WHERE event_date_surr_id = dt
+        ) RETURNING 1'
+    ) INTO inserted_count;
 
-    -- Log the number of inserted rows
-    INSERT INTO logging (procedure_name, rows_affected)
-    VALUES ('insert_DM_DATES_procedure', inserted_count);
-
+    INSERT INTO logging (procedure_name, rows_affected) VALUES ('insert_DIM_DATES_procedure', inserted_count);
     RAISE NOTICE 'Inserted rows: %', inserted_count;
 
 EXCEPTION
     WHEN OTHERS THEN
-        -- Log any errors that occur
-        INSERT INTO logging (procedure_name, rows_affected)
-        VALUES ('insert_DM_DATES_procedure', -1);
-
-        -- Raise the exception to propagate the error
+        INSERT INTO logging (procedure_name, rows_affected) VALUES ('insert_DIM_DATES_procedure', -1);
         RAISE NOTICE 'Error occurred: %', SQLERRM;
 END;
 $$;
@@ -148,55 +128,41 @@ $$;
 CREATE SEQUENCE IF NOT EXISTS BL_DM.dm_employees_id_sec;
 
 
-
 CREATE OR REPLACE PROCEDURE insert_DIM_EMPLOYEES_procedure()
 LANGUAGE plpgsql
 AS $$
 DECLARE
     inserted_count INTEGER;
-BEGIN
-    -- Insert into the target table and count the inserted rows
-    WITH inserted AS (
-        INSERT INTO BL_DM.DIM_EMPLOYEES (
-            employee_surr_id,
-            employee_name,
-            employee_last_name,
-            employee_email,
-            source_id,
-            source_entity,
-            source_system
-        )
-        SELECT
-            nextval('BL_DM.dm_employees_id_sec') ,
-            employee_name,
-            employee_last_name,
-            employee_email,
-            employee_id, 
-            'BL_3NF', 
-            'CE_EMPLOYEES' 
-        FROM BL_3NF.CE_EMPLOYEES e
+    employee_cursor CURSOR FOR
+        SELECT nextval('BL_DM.dm_employees_id_sec'), employee_name, employee_last_name, employee_email, employee_id
+        FROM BL_3NF.CE_EMPLOYEES
         WHERE NOT EXISTS (
-            SELECT 1 
-            FROM BL_DM.DIM_EMPLOYEES c
-            WHERE c.source_id = e.employee_id
+            SELECT 1
+            FROM BL_DM.DIM_EMPLOYEES
+            WHERE source_id = employee_id
+        );
+    employee_record RECORD;
+BEGIN
+    OPEN employee_cursor;
+    LOOP
+        FETCH employee_cursor INTO employee_record;
+        EXIT WHEN NOT FOUND;
+        INSERT INTO BL_DM.DIM_EMPLOYEES (
+            employee_surr_id, employee_name, employee_last_name, employee_email, source_id, source_entity, source_system
+        ) VALUES (
+            employee_record.employee_surr_id, employee_record.employee_name, employee_record.employee_last_name, employee_record.employee_email, employee_record.employee_id, 'BL_3NF', 'CE_EMPLOYEES'
         )
-        RETURNING 1 -- Use RETURNING to count the rows
-    )
-    SELECT COUNT(*) INTO inserted_count FROM inserted;
+        ON CONFLICT (source_id) DO NOTHING
+        RETURNING 1 INTO inserted_count;
+    END LOOP;
+    CLOSE employee_cursor;
 
-    -- Log the number of inserted rows
-    INSERT INTO logging (procedure_name, rows_affected)
-    VALUES ('insert_DIM_EMPLOYEES_procedure', inserted_count);
-
+    INSERT INTO logging (procedure_name, rows_affected) VALUES ('insert_DIM_EMPLOYEES_procedure', inserted_count);
     RAISE NOTICE 'Inserted rows: %', inserted_count;
 
 EXCEPTION
     WHEN OTHERS THEN
-        -- Log any errors that occur
-        INSERT INTO logging (procedure_name, rows_affected)
-        VALUES ('insert_DIM_EMPLOYEES_procedure', -1);
-
-        -- Raise the exception to propagate the error
+        INSERT INTO logging (procedure_name, rows_affected) VALUES ('insert_DIM_EMPLOYEES_procedure', -1);
         RAISE NOTICE 'Error occurred: %', SQLERRM;
 END;
 $$;
@@ -222,64 +188,38 @@ AS $$
 DECLARE
     inserted_count INTEGER;
 BEGIN
-    -- Insert into the target table and count the inserted rows
-    WITH inserted AS (
-        INSERT INTO BL_DM.DIM_PRODUCTS (
-            product_surr_id,
-            product_name,
-            product_length,
-            product_depth,
-			product_width,
-			product_cost,
-			product_price,
-			product_stock,
-			hierarchy1_id,
-			hierarchy2_id,
-            source_id,
-            source_entity,
-            source_system
-        )
-        SELECT
-            nextval('BL_DM.dm_products_id_sec') ,
-            product_name,
-            product_length,
-            product_depth,
-			product_width,
-			product_cost,
-			product_price,
-			product_stock,
-			hierarchy1_id,
-			hierarchy2_id,
-            product_id, 
-            'BL_3NF',
-            'CE_PRODUCTS'
-        FROM BL_3NF.CE_PRODUCTS p
-        WHERE NOT EXISTS (
-            SELECT 1 
-            FROM BL_DM.DIM_PRODUCTS c
-            WHERE c.source_id = p.product_id
-        )
-        RETURNING 1 -- Use RETURNING to count the rows
+    INSERT INTO BL_DM.DIM_PRODUCTS (
+        product_surr_id, product_name, product_length, product_depth, product_width, product_cost, product_price, product_stock, hierarchy1_id, hierarchy2_id, source_id, source_entity, source_system
     )
-    SELECT COUNT(*) INTO inserted_count FROM inserted;
+    SELECT
+        nextval('BL_DM.dm_products_id_sec'), product_name, product_length, product_depth, product_width, product_cost, product_price, product_stock, hierarchy1_id, hierarchy2_id, product_id, 'BL_3NF', 'CE_PRODUCTS'
+    FROM BL_3NF.CE_PRODUCTS
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM BL_DM.DIM_PRODUCTS
+        WHERE source_id = product_id
+    )
+    ON CONFLICT (source_id) DO UPDATE SET
+        product_name = EXCLUDED.product_name,
+        product_length = EXCLUDED.product_length,
+        product_depth = EXCLUDED.product_depth,
+        product_width = EXCLUDED.product_width,
+        product_cost = EXCLUDED.product_cost,
+        product_price = EXCLUDED.product_price,
+        product_stock = EXCLUDED.product_stock,
+        hierarchy1_id = EXCLUDED.hierarchy1_id,
+        hierarchy2_id = EXCLUDED.hierarchy2_id
+    RETURNING 1 INTO inserted_count;
 
-    -- Log the number of inserted rows
-    INSERT INTO logging (procedure_name, rows_affected)
-    VALUES ('insert_DIM_PRODUCTS_procedure', inserted_count);
-
+    INSERT INTO logging (procedure_name, rows_affected) VALUES ('insert_DIM_PRODUCTS_procedure', inserted_count);
     RAISE NOTICE 'Inserted rows: %', inserted_count;
 
 EXCEPTION
     WHEN OTHERS THEN
-        -- Log any errors that occur
-        INSERT INTO logging (procedure_name, rows_affected)
-        VALUES ('insert_DIM_PRODUCTS_procedure', -1);
-
-        -- Raise the exception to propagate the error
+        INSERT INTO logging (procedure_name, rows_affected) VALUES ('insert_DIM_PRODUCTS_procedure', -1);
         RAISE NOTICE 'Error occurred: %', SQLERRM;
 END;
 $$;
-
 
 
 
