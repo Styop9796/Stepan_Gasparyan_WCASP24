@@ -24,8 +24,6 @@ def test_add_numbers(case):
     assert result == expected
 
 
-
-
 @pytest.mark.critical
 @pytest.mark.parametrize("input_values", [
     ('a', 2, 1),
@@ -33,5 +31,6 @@ def test_add_numbers(case):
     ([], 1, 4),  
 ])
 def test_add_invalid_types(input_values):
-    with pytest.raises(TypeError, match='Please check the parameters. All of them must be numeric'):
+    with pytest.raises(TypeError, match='Please check the parameters. All of them must be numeric') as exc_info:
         add_numbers(*input_values)
+    assert exc_info.type is TypeError
