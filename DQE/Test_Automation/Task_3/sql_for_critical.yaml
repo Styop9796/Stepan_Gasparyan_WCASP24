@@ -1,0 +1,22 @@
+tests:
+  - name: "Duplicate check for customer_id in ce_customers_scd table"
+    sql: |
+      SELECT COUNT(*) FROM (SELECT customer_id, COUNT(*)
+      FROM bl_3nf.ce_customers_scd
+      GROUP BY customer_id
+      HAVING COUNT(*) > 1) empty
+    expected: 0
+  - name: "Duplicate check for sale_id in ce_sales table"
+    sql: |
+      SELECT COUNT(*) FROM (SELECT sale_id, COUNT(*)
+      FROM bl_3nf.ce_sales
+      GROUP BY sale_id
+      HAVING COUNT(*) > 1) empty
+    expected: 0
+  - name: "Duplicate check for customer_id and start_date in ce_customers_scd table"
+    sql: |
+      SELECT COUNT(*) FROM (SELECT customer_id, COUNT(*)
+      FROM bl_3nf.ce_customers_scd
+      GROUP BY customer_id
+      HAVING COUNT(*) > 1) empty
+    expected: 0

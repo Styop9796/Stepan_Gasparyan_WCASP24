@@ -1,0 +1,3 @@
+queries:
+  check_table_exists: "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '{table_name}');"
+  check_row_count: "SELECT COUNT(*) FROM {table_name};"
