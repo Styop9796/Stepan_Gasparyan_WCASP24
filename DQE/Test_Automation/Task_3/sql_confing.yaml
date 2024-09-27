@@ -1,0 +1,10 @@
+tests:
+  - name: Completeness check for ce_customers_scd table
+    sql: SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'bl_3nf' AND TABLE_NAME = 'ce_customers_scd'
+    expected: 1
+  - name: Completeness check for ce_sales table
+    sql: SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'bl_3nf' AND TABLE_NAME = 'ce_sales'
+    expected: 1
+  - name: Row count check for ce_customers_scd table
+    sql: SELECT COUNT(*) FROM bl_3nf.ce_customers_scd
+    expected: 1200  

@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create ec2 instance with script (Stepan Gasparyan)
+
+Resources:
+  MyEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    DeletionPolicy: Retain
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0eedeed01d82f7126
+      KeyName: Stepan_gasparyan_ec2_key
+      SecurityGroupIds:  
+        - sg-0fbf42a5fb4bc1004
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 10
+            VolumeType: gp3
+        - DeviceName: /dev/sdb
+          Ebs:
+            VolumeSize: 10
+            VolumeType: gp3
+      IamInstanceProfile: AWS_EC2_full_access_S3
+      Tags:
+        - Key: Name
+          Value: Stepan_Gasparyan_EC2(CloudFormation)
+        - Key: owner
+          Value: student
+
+
